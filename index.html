@@ -1,0 +1,329 @@
+<link href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,300,600,700,800,400" rel="stylesheet" type="text/css">
+
+<link rel="stylesheet" href="https://kingcounty.gov/css/kc-theme-corporate.css">
+<link rel="stylesheet" href="/styles.css">
+<div class='container'>
+  <div class="row addon-row">
+    <div class="col-sm-12">
+      <div role="region" aria-live="polite" aria-relevant="all" id="app">
+        <!--LOADING ICON START -->
+        <div class="row">
+
+          <div class="col-sm-12">
+            <section v-if="loading" class="loading-container">
+              <span class="sr-only">Loading...</span>
+              <span class="paws top-right fa fa-paw fa-3x"></span>
+              <span class="paws top-left fa fa-paw fa-3x"></span>
+              <span class="paws bottom-right fa fa-paw fa-3x"></span>
+              <span class="paws bottom-left fa fa-paw fa-3x"></span>
+
+            </section>
+
+          </div>
+        </div>
+
+        <!--LOADING ICON END -->
+
+        <div class="fadeIn" v-cloak>
+
+          <section id="errorMessage" v-if="errored">
+            <div class="call-out-text call-out-text-danger">
+              <p class="h4"><span class="fa fa-exclamation-circle"></span> We're sorry, we're not able to retrieve this information at the moment, please try back later.</p>
+
+            </div>
+          </section>
+
+          <!-- CARD LIST START -->
+
+          <!--CARD ROW CONTAINER START -->
+          <div v-if="!loading && !errored && info.length">
+            <div class="row m-b">
+              <div class="col-sm-12 m-b">
+                <button v-if="!loading && !errored" class="btn-link btn pull-left m-b" id="filterButton" data-toggle="modal" data-target="#filterModal"><span aria-hidden="true" class="fa fa-sliders"></span> Filter and refine</button>
+              </div>
+            </div>
+              <div class="row m-b">
+              <!--TOP LEVEL FILTERS -->
+              <div class="col-sm-4">
+                <label for="postSearch1">Search by Name</label> <input type="text" id="postSearch1" class="form-control" v-model="search" />
+              </div>
+
+              <div class="col-sm-4">
+                <label for="idSearch1">Search by ID </label> <input type="text" id="idSearch1" class="form-control" v-model="searchId" />
+              </div>
+              
+                            <div class="col-sm-4">
+                <!-- TYPE START -->
+                <label for="typeSelect1">Animal Type</label>
+                <select id="typeSelect1" class="form-control" v-model="selectedType">
+                  <option value="">All</option>
+                  <option value="cat">Cat</option>
+                  <option value="dog">Dog</option>
+                  <option value="bird">Bird</option>
+                  <option value="livestock">Livestock</option>
+                  <option value="other">Other (rodents, rabbits, reptiles, etc.)</option>
+                  <!--<option v-for="item in info_type" v-bind:value="item || 'undefined'"> {{item}} </option>-->
+                </select>
+              </div>
+            </div>
+
+            <!-- FILTER START -->
+
+            <ul class="list-inline m-t-md filter-button-row">
+              <li v-if="search"><button class="btn btn-xs btn-default" v-on:click="search = ''">Search <span class="fa fa fa-times-circle" aria-hidden="true"></span></button></li>
+              <li v-if="searchId"><button class="btn btn-xs btn-default" v-on:click="searchId = ''">ID Search <span class="fa fa fa-times-circle" aria-hidden="true"></span></button></li>
+
+              <li v-if="selectedType"><button class="btn btn-xs btn-default" v-on:click="selectedType = ''">Animal type <span class="fa fa-times-circle" aria-hidden="true"></span></button></li>
+              <li v-if="selectedLocation"><button class="btn btn-xs btn-default" v-on:click="selectedLocation = ''">Location <span class="fa fa fa-times-circle" aria-hidden="true"></span></button></li>
+              <li v-if="selectedTemp"><button class="btn btn-xs btn-default" v-on:click="selectedTemp = ''">Temperament <span class="fa fa fa-times-circle" aria-hidden="true"></span></button></li>
+              <li v-if="selectedAge.length > 0"><button class="btn btn-xs btn-default" v-on:click="selectedAge = []; ageClear()">Age <span class="fa fa fa-times-circle" aria-hidden="true"></span></button></li>
+              <li v-if="selectedSex"><button class="btn btn-xs btn-default" v-on:click="selectedSex = ''">Sex <span class="fa fa fa-times-circle" aria-hidden="true"></span></button></li>
+              <li v-if="itemsCount < lessThan"><button class="btn btn-xs btn-link" v-on:click="resetForm">Clear all filters <span class="fa fa-times-circle" aria-hidden="true"></span></button></li>
+            </ul>
+            <p class="text-center lead m-t" v-if="!loading && !errored && info.length" v-bind:class="{'stickyNoresults': !computed_items.length  }">
+
+              Results: <strong>{{itemsCount}}</strong>
+
+            </p>
+
+            <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" id="filterModal" aria-labelledby="filterModal">
+
+              <div class="modal-dialog modal-lg">
+
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title">Search or filter the results</h4>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-sm-12">
+
+                      <div class="col-sm-6">
+                        <!--SEARCH START -->
+                        <label for="postSearch">Search by Name</label> <input type="text" id="postSearch" class="form-control" v-model="search" />
+                        <!--SEARCH END -->
+                        <!-- TYPE START -->
+                        <label for="typeSelect">Animal Type</label>
+                        <select id="typeSelect" class="form-control" v-model="selectedType">
+                          <option value="">All</option>
+                          <option value="cat">Cat</option>
+                          <option value="dog">Dog</option>
+                          <option value="bird">Bird</option>
+                          <option value="livestock">Livestock</option>
+                          <option value="other">Other (rodents, rabbits, reptiles, etc.)</option>
+                          <!--<option v-for="item in info_type" v-bind:value="item || 'undefined'"> {{item}} </option>-->
+                        </select>
+                        <!--TYPE END -->
+
+                        <!-- GENDER START -->
+                        <label for="sexSelect">Sex</label>
+                        <select id="sexSelect" class="form-control" v-model="selectedSex">
+                          <option value="">All</option>
+                          <option value="female">Female</option>
+                          <option value="male">Male</option>
+                        </select>
+                        <!-- GENDER END -->
+
+                        <!-- AGE START -->
+                        <label for="ageSelect">Age</label>
+                        <select multiple id="ageSelect" class="form-control" v-model="selectedAge">
+                          <option value="">All</option>
+                          <option value="less1">Younger than 1</option>
+                          <option value="1to3">1 to 3</option>
+                          <option value="4to6">4 to 6</option>
+                          <option value="7to9">7 to 9</option>
+                          <option value="seniors">10 and older</option>
+                          <option value="NO AGE">No age given</option>
+                        </select>
+                        <!-- AGE END -->
+
+                      </div>
+                      <div class="col-sm-6">
+                        <!--SEARCH START -->
+                        <label for="idSearch">Search by ID </label> <input type="text" id="idSearch" class="form-control" v-model="searchId" />
+                        <!-- TEMPERAMENT START -->
+                        <label for="tempSelect">Temperament</label>
+                        <ul id="tempSelect" class="list-inline">
+                          <li><label><input name="temp" type="radio" v-model="selectedTemp" value=""> All</label></li>
+                          <li><label><span class="sr-only">Green</span><input name="temp" type="radio" v-model="selectedTemp" value="GREEN"> <img style="height:34px" src="https://kingcounty.gov/~/media/depts/regional-animal-services/images/All-Images/green.ashx"></label></li>
+                          <li><label><span class="sr-only">Red</span><input name="temp" type="radio" v-model="selectedTemp" value="RED"> <img class="center-block" style="height:34px" src="https://kingcounty.gov//~/media/depts/regional-animal-services/images/All-Images/red.ashx"></label></li>
+                          <li><label><span class="sr-only">Blue</span><input name="temp" type="radio" v-model="selectedTemp" value="BLUE"> <img style="height:34px" src="https://kingcounty.gov//~/media/depts/regional-animal-services/images/All-Images/blue.ashx"></label></li>
+                        </ul>
+                        <!-- TEMPERAMENT END -->
+                        <!-- LOCATION START -->
+                        <label for="locationSelect">Location</label>
+                        <select id="locationSelect" class="form-control" v-model="selectedLocation">
+                          <option value="">All</option>
+                          <option value="raskc">King County Pet Adoption Center</option>
+                          <option value="foster">Foster home</option>
+                          <option value="reber">Reber Ranch</option>
+
+                          <optgroup label="Petco locations">
+                            <option value="covington">Covington</option>
+                            <option value="kirkland">Kirkland</option>
+                            <option value="tukwila">Tukwila</option>
+                          </optgroup>
+                          <!--
+                 <option v-for="item in info_location" v-bind:value="item || 'undefined'">{{item}}</option>-->
+                        </select>
+                        <!-- LOCATION END -->
+
+                      </div>
+
+                    </div>
+                  </div>
+                  <div class="modal-footer m-t">
+
+                    <button class="btn btn-xs btn-link m-t m-r" v-on:click="resetForm">Clear all filters</button><button type="button" class="btn btn-primary" data-dismiss="modal">See my selections</button>
+
+                  </div>
+                  <div class="sticky" v-bind:class="{ stickyResults: computed_items.length, 'stickyNoresults': !computed_items.length  }">
+
+                    <p class="text-center m-t-md m-b-md">
+
+                      Results: {{itemsCount}}
+
+                    </p>
+
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- FILTER END -->
+
+            <div class="m-t-lg row results" v-for="i in Math.ceil(computed_items.length / 3)">
+
+              <div v-bind:key="i" v-for="(items, i) in computed_items.slice((i - 1) * 3, i * 3)" v-bind:class="{ 'col-sm-4': computed_items.length > 1, 'col-lg-8 col-lg-offset-2 col-sm-12': computed_items.length <= 1 }">
+
+                <div class="animal-card panel panel-default">
+                  <div class="panel-body">
+                    <h3 v-bind:id="items.animal_name" class="m-t-0 m-b-lg h4 pull-left">{{items.animal_name || items.animal_id}}</h3>
+                    <img class="pull-right" alt="Blue temperament" v-if="items.temperament === 'BLUE'" style="height:34px" src="https://kingcounty.gov//~/media/depts/regional-animal-services/images/All-Images/blue.ashx">
+                    <img class="pull-right" alt="Red temperament" v-if="items.temperament === 'RED'" style="height:34px" src="https://kingcounty.gov//~/media/depts/regional-animal-services/images/All-Images/red.ashx">
+                    <img class="pull-right" alt="Green temperament" v-if="items.temperament === 'GREEN'" style="height:34px" src="https://kingcounty.gov//~/media/depts/regional-animal-services/images/All-Images/green.ashx"><span class="sr-only">{{items.temperament | titlecase }}</span>
+
+                    <div class="image-container">
+                      <img class="pet-image" v-bind:alt="items.animal_name + ' the ' + items.animal_type" v-lazy="items.image.url" loading="lazy">
+                    </div>
+                    <ul class="list-unstyled">
+                      <li>{{items.age | titlecase}}</li>
+                      <li>{{ items.animal_type }}</li>
+                      <li>{{items.animal_gender | removeSpayed }} {{items.animal_breed | lowercase }}</li>
+                      <li>Received on: {{items.date | dateformat}}</li>
+                      
+                    </ul>
+                    <div class="readMore"><button type="button" class="animal-link" data-toggle="modal" v-bind:data-target="'#'+items.animal_id">Meet {{items.animal_name || "me"}}</button></div>
+
+                  </div>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" v-bind:id="items.animal_id" tabindex="-1" role="dialog" v-bind:aria-labelledby="'label'+items.animal_id">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Close</button>
+                        <h4 class="modal-title" v-bind:id="'label'+items.animal_id">{{items.animal_name || items.animal_id }}
+
+                          <img style="height:34px; display: inline-block" alt="Bashful blue icon" v-if="items.temperament === 'BLUE'" src="https://kingcounty.gov//~/media/depts/regional-animal-services/images/All-Images/blue.ashx">
+                          <img style="height:34px; display: inline-block" alt="Rambunctious red icon" v-if="items.temperament === 'RED'" src="https://kingcounty.gov//~/media/depts/regional-animal-services/images/All-Images/red.ashx">
+                          <img style="height:34px; display: inline-block" alt="Easy-going green icon" v-if="items.temperament === 'GREEN'" src="https://kingcounty.gov//~/media/depts/regional-animal-services/images/All-Images/green.ashx"><span class="sr-only">{{items.temperament | titlecase }}</span>
+
+                        </h4>
+
+                      </div>
+                      <div class="modal-body">
+                        <div id="modal-image-container" class="col-xs-12 col-sm-6 pull-right" style="margin-bottom: 20px;">
+                          <img v-bind:alt="items.animal_name + ' the ' + items.animal_type" v-lazy="items.image.url" class="img-responsive center-block" loading="lazy">
+                        </div>
+
+                        <div class="p-r" v-html="items.memo">
+
+                        </div>
+
+                        <div v-if="items.current_location === 'King County Pet Adoption Center 21615 64TH AVE S KENT, WA 98032'" class="row">
+                          <div class="col-sm-12">
+                            <p class="bg-success p-a-md">You can meet {{items.animal_name}} (Animal ID Number <strong>{{ items.animal_id }} </strong>) at our shelter. <a href="#shelter-process" id="shelter-scroll">Please read our shelter process</a> to find out how to meet {{items.animal_name}}.</p>
+                          </div>
+                        </div>
+                    
+                       <div v-else-if="items.current_location.toString().toLowerCase().includes('foster home')" class="row">
+                          <div class="col-sm-12">
+                            <p class="bg-success p-a-md">You can meet {{items.animal_name}} (Animal ID Number <strong>{{ items.animal_id }} </strong>) at a foster home. <a href="#foster-process"  id="foster-scroll">Please read our foster adoption process</a> to find out how to meet {{items.animal_name}}.</p>
+                          </div>
+                        </div>
+
+ <div v-else class="row">
+                          <div class="col-sm-12">
+                            <p class="bg-success p-a-md">You can meet {{items.animal_name}} (Animal ID Number <strong>{{ items.animal_id }} </strong>) at {{items.current_location}}. <a href="#partnerstore-process" id="partnerstore-scroll">Please read our partner store adoption process</a> to find out how to meet {{items.animal_name}}.</p>
+                          </div>
+                        </div>     
+
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- NO RESULTS MESSAGE START -->
+
+              <!-- NO RESULTS MESSAGE END -->
+
+            </div>
+            <!--STUFF GOES IN HERE-->
+
+            <section class="row m-t-lg" id="noResults" v-if="!loading && !computed_items.length && !errored && info.length">
+              <div class="col-sm-12">
+                <p class="text-center lead">Change your filters to see if there are any pets that match, or clear your filters and start over.</p>
+
+                <div class="row m-b">
+                  <div class="col-sm-4">
+                  </div>
+                  <div class="col-sm-2">
+                    <button class="btn-block btn btn-success btn-sm" data-toggle="modal" data-target="#filterModal">Change filters</button></div>
+                  <div class="col-sm-2">
+                    <button class="btn-block btn btn-link btn-sm" v-on:click="resetForm">Clear all filters</button>
+                  </div>
+                  <div class="col-sm-4">
+                  </div>
+                </div>
+
+              </div>
+            </section>
+            
+          <section id="emptyMessage" v-if="!errored && !info.length">
+            <div class="call-out-text call-out-text-info">
+              <p class="h4 text-center"><span class="fa fa-paw fa-3x m-r" style="vertical-align: middle;"></span>We don't have any pets available right now. Please check back soon.</p>
+
+            </div>
+          </section>
+            <!-- CARD ROW CONTAINER END -->
+          </div>
+        </div>
+        <!--CLOAK -->
+      </div>
+    </div>
+    <!--CARD LIST END -->
+
+  </div>
+
+</div>
+
+<!--APP-->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+<script src="https://unpkg.com/vue-lazyload/vue-lazyload.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.7.0/intersection-observer.js"></script>
+<script src="/scripts.js"></script>
